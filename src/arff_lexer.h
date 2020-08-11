@@ -36,6 +36,12 @@ public:
      */
     ArffToken next_token();
 
+    /**
+     * @brief Returns the current position of scanner in the document.
+     * @return "(Ln %d, Col %d)"
+     */
+    std::string get_position();
+
 
     /** space */
     static const char SPACE;
@@ -55,7 +61,6 @@ public:
     static const char COMMA;
     /** dealing with missing values */
     static const char MISS;
-
 
 private:
     /**

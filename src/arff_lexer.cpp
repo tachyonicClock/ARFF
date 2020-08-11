@@ -184,6 +184,26 @@ std::string ArffLexer::_read_str() {
             }
         } while(!_is_d_quote(c));
     }
+    else if(_is_comma(c)){
+        c = m_scanner->next();
+        if (!(_is_d_quote(c) || _is_s_quote(c))) {
+            return str;
+        }
+        
+        do {
+            c = m_scanner->next();
+            if(c < 0) {
+                break;
+            }
+            if(_is_bracket_close(c)) {
+                m_b_close = true;
+                break;
+            }
+            if(!_is_s_quote(c)) {
+                str += c;
+            }
+        } while(!_is_s_quote(c));
+    }
     else {
         while(!_is_space(c) && !_is_comma(c)) {
             if(c < 0) {
@@ -198,4 +218,9 @@ std::string ArffLexer::_read_str() {
         }
     }
     return str;
+}
+
+
+std::string ArffLexer::get_position(){
+    return "( Ln " + std::to_string(m_scanner->line()) +  ", Col " + std::to_string(m_scanner->column()) + ")";
 }

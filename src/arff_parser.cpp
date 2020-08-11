@@ -93,8 +93,9 @@ void ArffParser::_read_attr() {
         break;
     default:
         THROW("%s: Bad attribute type for name=%s attr-type=%s!",
-              "ArffParser::_read_attr", name.token_str().c_str(),
-              arff_token2str(ate).c_str());
+              "ArffParser::_read_attr %s", name.token_str().c_str(),
+              arff_token2str(ate).c_str(),
+              m_lexer->get_position());
     }
     m_data->add_attr(new ArffAttr(name.token_str(), ave));
     ///@todo: get the date-format
@@ -111,9 +112,10 @@ void ArffParser::_read_attr() {
             break;
         }
         else {
-            THROW("%s: For nominal values expecting '%s' got '%s' token!",
+            THROW("%s For nominal values expecting '%s' got '%s' token! %s",
               "ArffParser::_read_attr", "VALUE_TOKEN",
-              arff_token2str(tok.token_enum()).c_str());
+              arff_token2str(tok.token_enum()).c_str(),
+              m_lexer->get_position());
         }
     }
 }

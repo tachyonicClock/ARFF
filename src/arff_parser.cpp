@@ -69,16 +69,25 @@ void ArffParser::_read_attrs() {
 void ArffParser::_read_attr() {
     // name
     ArffToken name = m_lexer->next_token();
-    if(name.token_enum() != VALUE_TOKEN) {
-        THROW("%s: 'ATTRIBUTE' must be followed by a '%s'! It is '%s'",
-              "ArffParser::_read_attr", "VALUE_TOKEN",
-              arff_token2str(name.token_enum()).c_str());
+
+    // It is very common for the date attribute to be named "Date" but we will
+    // throw if someone calls their numeric attribute numeric, since its a little
+    // odd. But I might just remove this check in future.
+    if (name.token_enum() != VALUE_TOKEN &&
+        name.token_enum() != DATE_TOKEN)
+    {
+        printf("%s: 'ATTRIBUTE' must be followed by a '%s'! It is '%s' %s",
+               "ArffParser::_read_attr", "VALUE_TOKEN",
+               arff_token2str(name.token_enum()).c_str(),
+               m_lexer->get_position().c_str());
     }
+
     // type
     ArffToken type = m_lexer->next_token();
     ArffTokenEnum ate = type.token_enum();
     ArffValueEnum ave = UNKNOWN_VAL;
-    switch(ate) {
+    switch (ate)
+    {
     case NUMERIC_TOKEN:
         ave = NUMERIC;
         break;
@@ -95,27 +104,39 @@ void ArffParser::_read_attr() {
         THROW("%s: Bad attribute type for name=%s attr-type=%s!",
               "ArffParser::_read_attr %s", name.token_str().c_str(),
               arff_token2str(ate).c_str(),
-              m_lexer->get_position());
+              m_lexer->get_position().c_str());
     }
     m_data->add_attr(new ArffAttr(name.token_str(), ave));
-    ///@todo: get the date-format
-    if(ave != NOMINAL) {
-        return;
-    }
-    // nominal type
-    while(true) {
+
+    if (ave == DATE)
+    {
         ArffToken tok = m_lexer->next_token();
-        if(tok.token_enum() == VALUE_TOKEN) {
-            m_data->add_nominal_val(name.token_str(), tok.token_str());
+        if (tok.token_enum() == VALUE_TOKEN)
+        {
+            m_data->add_date_format(name.token_str(), tok.token_str());
         }
-        else if(tok.token_enum() == BRKT_CLOSE) {
-            break;
-        }
-        else {
-            THROW("%s For nominal values expecting '%s' got '%s' token! %s",
-              "ArffParser::_read_attr", "VALUE_TOKEN",
-              arff_token2str(tok.token_enum()).c_str(),
-              m_lexer->get_position());
+    }
+    else if (ave == NOMINAL)
+    {
+        // nominal type
+        while (true)
+        {
+            ArffToken tok = m_lexer->next_token();
+            if (tok.token_enum() == VALUE_TOKEN)
+            {
+                m_data->add_nominal_val(name.token_str(), tok.token_str());
+            }
+            else if (tok.token_enum() == BRKT_CLOSE)
+            {
+                break;
+            }
+            else
+            {
+                THROW("%s For nominal values expecting '%s' got '%s' token! %s",
+                      "ArffParser::_read_attr", "VALUE_TOKEN",
+                      arff_token2str(tok.token_enum()).c_str(),
+                      m_lexer->get_position());
+            }
         }
     }
 }

@@ -101,8 +101,8 @@ void ArffParser::_read_attr() {
         ave = NOMINAL;
         break;
     default:
-        THROW("%s: Bad attribute type for name=%s attr-type=%s!",
-              "ArffParser::_read_attr %s", name.token_str().c_str(),
+        THROW("%s: Bad attribute type for name=%s attr-type=%s! %s",
+              "ArffParser::_read_attr", name.token_str().c_str(),
               arff_token2str(ate).c_str(),
               m_lexer->get_position().c_str());
     }
@@ -135,7 +135,7 @@ void ArffParser::_read_attr() {
                 THROW("%s For nominal values expecting '%s' got '%s' token! %s",
                       "ArffParser::_read_attr", "VALUE_TOKEN",
                       arff_token2str(tok.token_enum()).c_str(),
-                      m_lexer->get_position());
+                      m_lexer->get_position().c_str());
             }
         }
     }
@@ -160,7 +160,7 @@ void ArffParser::_read_instances() {
                       "MISSING_TOKEN", arff_token2str(type).c_str());
             }
             if(type == MISSING_TOKEN) {
-                inst->add(new ArffValue(aType));
+                inst->add(new ArffValue(UNKNOWN_VAL));
             }
             else if(aType == NUMERIC) {
                 inst->add(new ArffValue(tok.token_str(), true));
@@ -172,8 +172,16 @@ void ArffParser::_read_instances() {
                 inst->add(new ArffValue(tok.token_str(), false, true));
             }
         }
-        if(!end_of_file) {
-            m_data->add_instance(inst);
+        try
+        {
+            if(!end_of_file) {
+                m_data->add_instance(inst);
+            }
         }
+        catch(std::runtime_error e)
+        {
+            throw std::runtime_error(e.what() + m_lexer->get_position());
+        }
+        
     }
 }

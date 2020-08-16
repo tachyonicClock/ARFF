@@ -105,6 +105,7 @@ void ArffData::_cross_check_instance(ArffInstance* inst) {
     }
     for(int32 i=0;i<m_num_attrs;++i) {
         ArffValue* val = inst->get(i);
+        if (val->missing()) continue;
         ArffAttr* attr = m_attrs[i];
         ArffValueEnum valType = val->type();
         ArffValueEnum attType = attr->type();

@@ -57,6 +57,8 @@ public:
     static const char S_QUOTE;
     /** double quote */
     static const char D_QUOTE;
+    /** back slash */
+    static const char B_SLASH;
     /** comma */
     static const char COMMA;
     /** dealing with missing values */
@@ -137,6 +139,13 @@ private:
      * @return true if it is, else false
      */
     bool _is_comma(char c) const;
+
+    /**
+     * @brief Checks whether the input character is a backslash or not
+     * @param c 
+     * @return true if it is, else false 
+     */
+    bool _is_backslash(char c) const;
 
     /**
      * @brief Checks whether the input character is a '?' or not

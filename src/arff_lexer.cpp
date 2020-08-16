@@ -12,6 +12,7 @@ const char ArffLexer::S_QUOTE = '\'';
 const char ArffLexer::D_QUOTE = '"';
 const char ArffLexer::COMMA   = ',';
 const char ArffLexer::MISS    = '?';
+const char ArffLexer::B_SLASH = '\\';
 
 
 ArffLexer::ArffLexer(const std::string& _file): m_scanner(NULL),
@@ -56,6 +57,10 @@ bool ArffLexer::_is_comma(char c) const {
 
 bool ArffLexer::_is_missing(char c) const {
     return (c == MISS);
+}
+
+bool ArffLexer::_is_backslash(char c) const {
+    return (c == B_SLASH);
 }
 
 bool ArffLexer::_skip_comments() {
@@ -106,7 +111,10 @@ ArffToken ArffLexer::next_token() {
     else if(icompare(str, "@data")) {
         token = DATA_TOKEN;
     }
-    else if(icompare(str, "numeric") || icompare(str, "real")) {
+    else if(
+        icompare(str, "numeric") ||
+        icompare(str, "real") ||
+        icompare(str, "integer")) {
         token = NUMERIC_TOKEN;
     }
     else if(icompare(str, "string")) {
@@ -164,10 +172,9 @@ std::string ArffLexer::_read_str() {
                 m_b_close = true;
                 break;
             }
-            if(!_is_s_quote(c)) {
-                str += c;
-            }
-        } while(!_is_s_quote(c));
+            if(!_is_s_quote(c) || _is_backslash(m_scanner->previous())) str += c;
+            else break;
+        } while(true);
     }
     else if(_is_d_quote(c)) {
         do {
@@ -179,15 +186,15 @@ std::string ArffLexer::_read_str() {
                 m_b_close = true;
                 break;
             }
-            if(!_is_d_quote(c)) {
-                str += c;
-            }
-        } while(!_is_d_quote(c));
+            if(!_is_d_quote(c) || _is_backslash(m_scanner->previous())) str += c;
+            else break;
+        } while(true);
     }
     else if(_is_comma(c)){
         c = m_scanner->next();
-        if (!(_is_d_quote(c) || _is_s_quote(c))) {
-            return str;
+        if (!(_is_d_quote(c) || _is_s_quote(c)) || _is_backslash(m_scanner->previous())) {
+            _skip_spaces();
+            return _read_str();
         }
         
         do {
@@ -199,10 +206,9 @@ std::string ArffLexer::_read_str() {
                 m_b_close = true;
                 break;
             }
-            if(!_is_s_quote(c)) {
-                str += c;
-            }
-        } while(!_is_s_quote(c));
+            if(!_is_d_quote(c) || _is_backslash(m_scanner->previous())) str += c;
+            else break;
+        } while(true);
     }
     else {
         while(!_is_space(c) && !_is_comma(c)) {

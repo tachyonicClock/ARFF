@@ -126,6 +126,8 @@ ArffValue::operator std::string() const {
         return num2str<int32>(m_int);
     case FLOAT:
         return num2str<float>(m_float);
+    case UNKNOWN_VAL:
+        return "?";
     case DATE:
     case STRING:
         return m_str;
